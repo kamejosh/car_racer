@@ -6,6 +6,7 @@ on:
       - master
     paths:
       - "car_racer/**"
+      - "setup.py"
 
 jobs:
   deploy:
