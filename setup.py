@@ -1,6 +1,6 @@
 import setuptools
 
-__version__ = "0.0.4b"
+__version__ = "0.0.5b"
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
@@ -19,14 +19,14 @@ test_requires = [
 ]
 
 setuptools.setup(
-    name="car_racer_ai",
+    name="car_racer",
     version=__version__,
     author="Joshua Hercher",
     author_email="josh@bitperfect.at",
     description="A small racing game with the possibility to train an AI to learn to play the game",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/kamejosh/car_racer_ai",
+    url="https://github.com/kamejosh/car_racer",
     packages=setuptools.find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",
