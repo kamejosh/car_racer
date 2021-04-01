@@ -27,12 +27,13 @@ def on_draw(interval):
         for car in config.replay_cars:
             car.do_replay(replay_iteration)
         replay_iteration += 1
+        config.window.clear()
     else:
         handle_car_stop()
         key_handler()
+        config.window.clear()
         if config.car.finish < 0:
             config.car.process_next_frame()
-    config.window.clear()
     config.batch.draw()
 
 
@@ -146,6 +147,6 @@ def main(mode, length=1, seed=0, chance=30, max_angle=90, replay_folder="replays
 
 if __name__ == '__main__':
     pyglet.gl.glClearColor(1, 0.7, 0.5, 1)
-    main(1)
+    main(0)
     for k in tic_toc.keys():
         print(f"{k}: {timed_function_statistics(k)}; executions: {len(tic_toc[k])}")
