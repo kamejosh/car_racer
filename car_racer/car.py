@@ -1,12 +1,15 @@
+import json
 import math
 import time
+from os import mkdir
+
 import pyglet
 import dotmap
 import car_racer.config as config
 from shapely.geometry import Polygon
 from pyglet.gl import glTranslatef
 from car_racer.tictoc import timed_function
-from os.path import join, dirname
+from os.path import join, dirname, isdir
 
 
 class Car:
@@ -37,7 +40,6 @@ class Car:
                                               x=self.car.x, y=self.car.y,
                                               anchor_x='center', anchor_y='center',
                                               group=config.text_group, batch=config.batch)
-        self.rotation = track.segments[0].coordinates[0].angle + 90
         self.steer = 0
         self.segment = 0
         self.distance = 0
@@ -46,6 +48,10 @@ class Car:
         self.stop = False
         self.started = False
         self.timer = time.monotonic()
+        self.replay = {"track": {"length": self.track.length,
+                                 "seed": self.track.seed,
+                                 "corners": self.track.corners},
+                       "frames": []}
 
     def __del__(self):
         self.car.delete()
@@ -57,6 +63,8 @@ class Car:
         if not self.stop:
             self.calculate_speed()
             self.calculate_position()
+            if self.started:
+                self.replay["frames"].append((self.car.x, self.car.y, self.car.rotation))
 
     @timed_function()
     def rotate(self, factor):
@@ -117,6 +125,7 @@ class Car:
         if self.calculate_collision():
             self.speed = 0
             self.stop = True
+            self.handle_stop()
 
     @timed_function()
     def calculate_checkpoint(self):
@@ -134,6 +143,7 @@ class Car:
                 self.finish_label.text = f"you finished in {round(self.finish, 2)} seconds - press R to restart"
                 self.finish_label.x = self.car.x
                 self.finish_label.y = self.car.y
+                self.handle_stop()
 
     @timed_function()
     def set_segments_visible(self):
@@ -179,3 +189,30 @@ class Car:
         dy = x1 * sin_rotation + y2 * cos_rotation + y
 
         return [(ax, ay), (bx, by), (cx, cy), (dx, dy)]
+
+    @timed_function()
+    def handle_stop(self):
+        if not isdir("replays"):
+            mkdir("replays")
+        track_name = f"{self.track.length}_{self.track.seed}_{self.track.corners['chance']}_{self.track.corners['max_angle']}"
+        if not isdir(f"replays/{track_name}"):
+            mkdir(f"replays/{track_name}")
+        file_name = f"replays/{track_name}/car_replay_{time.time()}.json"
+        f = open(file_name, "w")
+        json.dump(self.replay, f)
+        f.close()
+
+    @timed_function()
+    def load_replay(self, replay_file):
+        f = open(replay_file, "r")
+        replay = json.load(f)
+        track = replay["track"]
+        if self.track.length == track["length"] and self.track.seed == track["seed"] and self.track.corners == track["corners"]:
+            self.replay = replay
+
+    @timed_function()
+    def do_replay(self, iteration):
+        if len(self.replay["frames"]) > iteration:
+            self.car.x = self.replay["frames"][iteration][0]
+            self.car.y = self.replay["frames"][iteration][1]
+            self.car.rotation = self.replay["frames"][iteration][2]

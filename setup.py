@@ -41,6 +41,7 @@ setuptools.setup(
     entry_points={
         'console_scripts': [
             'cr_race = car_racer.__init__:race',
+            'cr_replay = car_racer.__init__:replay',
         ]
     },
     python_requires='>=3.6',

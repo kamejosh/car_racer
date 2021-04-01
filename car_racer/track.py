@@ -41,12 +41,12 @@ class Segment:
         self.corners = corners
         if segment is None:
             self.angle = 0
-            if random.randint(0, 100) > 100 - self.corners.chance:
-                self.angle = random.uniform(0, self.corners.max_angle)
+            if random.randint(0, 100) > 100 - self.corners["chance"]:
+                self.angle = random.uniform(0, self.corners["max_angle"])
         else:
             additional_angle = 0
-            if random.randint(0, 100) > 100 - self.corners.chance:
-                additional_angle = random.uniform(0, self.corners.max_angle)
+            if random.randint(0, 100) > 100 - self.corners["chance"]:
+                additional_angle = random.uniform(0, self.corners["max_angle"])
             self.angle = segment.angle + (additional_angle * factors[random.randint(0, 1)])
 
         self.length = random.randint(100, 200)
@@ -83,6 +83,7 @@ class Track:
         self.segments = []
         self.length = 0
         self.corners = corners
+        self.seed = seed
         random.seed(seed)
         number = 0
         while self.length < length:

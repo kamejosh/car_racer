@@ -1,9 +1,6 @@
 import argparse
 import car_racer.config as config
-from dotmap import DotMap
-from car_racer.main import *
-from car_racer.track import Track
-from car_racer.car import Car
+from car_racer.main import main
 
 
 def parse_game_arguments():
@@ -28,12 +25,13 @@ def parse_game_arguments():
                         help="the maximum turn of a corner in degree")
 
     arguments = parser.parse_args()
-
-    config.track = Track(arguments.track_length, arguments.track_seed,
-                         DotMap(chance=arguments.corner_chance, max_angle=arguments.corner_max_angle))
-    config.car = Car(config.track)
+    return arguments
 
 
 def race():
-    parse_game_arguments()
-    start_game()
+    args = parse_game_arguments()
+    main(0, args.track_length, args.track_seed, args.corner_chance, args.corner_max_angle)
+
+
+def replay():
+    main(1)
