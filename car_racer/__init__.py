@@ -47,5 +47,5 @@ def race():
 
 
 def replay():
-    args = parse_game_arguments()
+    args = parse_replay_arguments()
     main(1, replay_folder=args.replay_folder)
