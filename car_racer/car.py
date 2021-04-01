@@ -209,6 +209,7 @@ class Car:
         track = replay["track"]
         if self.track.length == track["length"] and self.track.seed == track["seed"] and self.track.corners == track["corners"]:
             self.replay = replay
+            self.speed_label.text = ""
 
     @timed_function()
     def do_replay(self, iteration):

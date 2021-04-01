@@ -30,9 +30,9 @@ def on_draw(interval):
     else:
         handle_car_stop()
         key_handler()
-        config.window.clear()
         if config.car.finish < 0:
             config.car.process_next_frame()
+    config.window.clear()
     config.batch.draw()
 
 
@@ -108,7 +108,7 @@ def start_replay(replay_files):
                 files = [f for f in listdir(f"{replay_files}/{directory}") if isfile(join(replay_files, directory, f))]
                 if len(files) > 0:
                     try:
-                        load_replay_files(replay_files, files)
+                        load_replay_files(f"{replay_files}/{directory}", files)
                         start_game()
                     except Exception:
                         traceback.print_stack()
