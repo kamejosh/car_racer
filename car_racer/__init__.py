@@ -28,10 +28,24 @@ def parse_game_arguments():
     return arguments
 
 
+def parse_replay_arguments():
+    parser = argparse.ArgumentParser(description="Replay Car Racer games",
+                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+
+    parser.add_argument("--replay_folder",
+                        type=str,
+                        default="replays",
+                        help="path to where replays are saved, defaults to replays and will use the first folder there")
+
+    arguments = parser.parse_args()
+    return arguments
+
+
 def race():
     args = parse_game_arguments()
     main(0, args.track_length, args.track_seed, args.corner_chance, args.corner_max_angle)
 
 
 def replay():
-    main(1)
+    args = parse_game_arguments()
+    main(1, replay_folder=args.replay_folder)

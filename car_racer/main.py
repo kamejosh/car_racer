@@ -129,7 +129,7 @@ def load_replay_files(replay_files, files):
     config.replay = True
 
 
-def main(mode, length=1, seed=0, chance=30, max_angle=90):
+def main(mode, length=1, seed=0, chance=30, max_angle=90, replay_folder="replays"):
     global label
     config.track = Track(length, seed, {"chance": chance, "max_angle": max_angle})
 
@@ -141,7 +141,7 @@ def main(mode, length=1, seed=0, chance=30, max_angle=90):
                                   x=config.car.car.x, y=config.car.car.y, group=config.text_group, batch=config.batch)
         start_game()
     if mode == 1:
-        start_replay("replays")
+        start_replay(replay_folder)
 
 
 if __name__ == '__main__':
