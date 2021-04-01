@@ -1,6 +1,6 @@
 import setuptools
 
-__version__ = "0.1.1b"
+__version__ = "0.2.0b"
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
@@ -41,6 +41,7 @@ setuptools.setup(
     entry_points={
         'console_scripts': [
             'cr_race = car_racer.__init__:race',
+            'cr_replay = car_racer.__init__:replay',
         ]
     },
     python_requires='>=3.6',

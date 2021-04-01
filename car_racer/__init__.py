@@ -1,9 +1,6 @@
 import argparse
 import car_racer.config as config
-from dotmap import DotMap
-from car_racer.main import *
-from car_racer.track import Track
-from car_racer.car import Car
+from car_racer.main import main
 
 
 def parse_game_arguments():
@@ -28,12 +25,27 @@ def parse_game_arguments():
                         help="the maximum turn of a corner in degree")
 
     arguments = parser.parse_args()
+    return arguments
 
-    config.track = Track(arguments.track_length, arguments.track_seed,
-                         DotMap(chance=arguments.corner_chance, max_angle=arguments.corner_max_angle))
-    config.car = Car(config.track)
+
+def parse_replay_arguments():
+    parser = argparse.ArgumentParser(description="Replay Car Racer games",
+                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+
+    parser.add_argument("--replay_folder",
+                        type=str,
+                        default="replays",
+                        help="path to where replays are saved, defaults to replays and will use the first folder there")
+
+    arguments = parser.parse_args()
+    return arguments
 
 
 def race():
-    parse_game_arguments()
-    start_game()
+    args = parse_game_arguments()
+    main(0, args.track_length, args.track_seed, args.corner_chance, args.corner_max_angle)
+
+
+def replay():
+    args = parse_game_arguments()
+    main(1, replay_folder=args.replay_folder)
