@@ -25,7 +25,7 @@ def on_draw(interval):
     if config.replay:
         global replay_iteration
         for car in config.replay_cars:
-            car.do_replay(replay_iteration)
+            car.do_replay(replay_iteration, car.follow)
         replay_iteration += 1
         config.window.clear()
     else:
@@ -110,6 +110,7 @@ def start_replay(replay_files):
                 if len(files) > 0:
                     try:
                         load_replay_files(f"{replay_files}/{directory}", files)
+                        decide_follow_car()
                         start_game()
                     except Exception:
                         traceback.print_stack()
@@ -130,8 +131,20 @@ def load_replay_files(replay_files, files):
     config.replay = True
 
 
+def decide_follow_car():
+    follow_car: Car = None
+    for car in config.replay_cars:
+        if (follow_car is None or
+                car.replay["distance"] > follow_car.replay["distance"] or
+                (car.replay["distance"] == follow_car.replay["distance"] and
+                 car.replay["time"] < follow_car.replay["time"])):
+            follow_car = car
+    follow_car.follow = True
+
+
 def main(mode, length=1, seed=0, chance=30, max_angle=90, replay_folder="replays"):
     global label
+    pyglet.gl.glClearColor(1, 0.7, 0.5, 1)
     config.track = Track(length, seed, {"chance": chance, "max_angle": max_angle})
 
     if mode == 0:
@@ -146,7 +159,6 @@ def main(mode, length=1, seed=0, chance=30, max_angle=90, replay_folder="replays
 
 
 if __name__ == '__main__':
-    pyglet.gl.glClearColor(1, 0.7, 0.5, 1)
-    main(0)
+    main(1)
     for k in tic_toc.keys():
         print(f"{k}: {timed_function_statistics(k)}; executions: {len(tic_toc[k])}")

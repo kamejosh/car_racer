@@ -1,11 +1,10 @@
 import json
 import math
 import time
-from os import mkdir
-
 import pyglet
 import dotmap
 import car_racer.config as config
+from os import mkdir
 from shapely.geometry import Polygon
 from pyglet.gl import glTranslatef
 from car_racer.tictoc import timed_function
@@ -47,11 +46,14 @@ class Car:
         self.finish = -1
         self.stop = False
         self.started = False
+        self.follow = False
         self.timer = time.monotonic()
         self.replay = {"track": {"length": self.track.length,
                                  "seed": self.track.seed,
                                  "corners": self.track.corners},
-                       "frames": []}
+                       "frames": [],
+                       "distance": 0,
+                       "time": -1}
 
     def __del__(self):
         self.car.delete()
@@ -125,6 +127,7 @@ class Car:
         if self.calculate_collision():
             self.speed = 0
             self.stop = True
+            self.replay["distance"] = self.segment
             self.handle_stop()
 
     @timed_function()
@@ -134,13 +137,12 @@ class Car:
             if self.rect_distance(segment.start, Polygon(self.get_car_boundaries())) == 0:
                 self.segment += 1
                 self.checkpoints.append(time.monotonic() - self.timer)
-                # print(f"checkpoint at {self.checkpoints[-1]}")
         else:
             segment = self.track.segments[self.segment]
             if self.rect_distance(segment.end, Polygon(self.get_car_boundaries())) == 0:
                 self.finish = time.monotonic() - self.timer
-                # print(f"finished in {round(self.finish, 2)} seconds")
                 self.finish_label.text = f"you finished in {round(self.finish, 2)} seconds - press R to restart"
+                self.replay["distance"] = self.segment
                 self.finish_label.x = self.car.x
                 self.finish_label.y = self.car.y
                 self.handle_stop()
@@ -170,8 +172,6 @@ class Car:
     @timed_function()
     def get_car_boundaries(self):
         rotation_radians = math.radians(self.car.rotation)
-        cos_rotation = math.cos(rotation_radians)
-        sin_rotation = math.sin(rotation_radians)
         img = self.car._texture
         x1 = -img.anchor_x
         y1 = -img.anchor_y
@@ -179,6 +179,8 @@ class Car:
         y2 = y1 + img.height
         x = self.car._x
         y = self.car._y
+        cos_rotation = math.cos(rotation_radians)
+        sin_rotation = math.sin(rotation_radians)
         ax = x1 * cos_rotation - y1 * sin_rotation + x
         ay = x1 * sin_rotation + y1 * cos_rotation + y
         bx = x2 * cos_rotation - y1 * sin_rotation + x
@@ -192,6 +194,7 @@ class Car:
 
     @timed_function()
     def handle_stop(self):
+        self.replay["time"] = time.monotonic() - self.timer
         if not isdir("replays"):
             mkdir("replays")
         track_name = f"{self.track.length}_{self.track.seed}_{self.track.corners['chance']}_{self.track.corners['max_angle']}"
@@ -212,8 +215,12 @@ class Car:
             self.speed_label.text = ""
 
     @timed_function()
-    def do_replay(self, iteration):
+    def do_replay(self, iteration, follow=False):
         if len(self.replay["frames"]) > iteration:
-            self.car.x = self.replay["frames"][iteration][0]
-            self.car.y = self.replay["frames"][iteration][1]
+            x = self.replay["frames"][iteration][0]
+            y = self.replay["frames"][iteration][1]
+            if follow:
+                glTranslatef(self.car.x - x, self.car.y - y, 0)
+            self.car.x = x
+            self.car.y = y
             self.car.rotation = self.replay["frames"][iteration][2]

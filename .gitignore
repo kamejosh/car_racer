@@ -7,3 +7,4 @@ __pycache__/
 .venv
 *.csv
 replays/
+local_test/
