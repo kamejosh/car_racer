@@ -22,10 +22,11 @@ class Car:
         self.car = pyglet.sprite.Sprite(car_image, group=config.car_group, batch=config.batch, x=car_image.width)
         self.car.rotation = track.segments[0].coordinates[0].angle + 90
         self.accelerate = 0
-        self.previous_direction = dotmap.DotMap(x=0, y=0, rotation=self.car.rotation)
+        self.previous_direction = [dotmap.DotMap(x=0, y=0, rotation=self.car.rotation)]
         self.rolling = True
         self.drifting = False
         self.speed = 0
+        self.speed_factor = 1
         self.speed_label = pyglet.text.Label(f"{round(self.speed * 21.6, 2)} km/h",
                                              font_name='Arial',
                                              font_size=12, color=(0, 0, 0, 255),
@@ -74,13 +75,16 @@ class Car:
             return
         if factor == 0:
             self.steer = 0
+            self.speed_factor = 1
         else:
+            self.speed_factor = 0.9
             self.steer += (1 / config.frames_per_second) * factor
 
         if abs(self.steer) > 1:
             self.steer = 1 * factor
 
         if self.drifting:
+            self.speed_factor = 0.8
             self.car.rotation += factor + (self.steer * 3)
         else:
             self.car.rotation += factor + self.steer
@@ -97,8 +101,11 @@ class Car:
                 self.timer = time.monotonic()
                 self.started = True
             self.speed += self.accelerate
-            if self.speed >= 18:
-                self.speed = 18
+            if self.speed >= config.max_speed * self.speed_factor:
+                if self.speed_factor < 1:
+                    self.speed -= self.accelerate * 1.5
+                else:
+                    self.speed = config.max_speed
             elif self.speed <= -2:
                 self.speed = -2
 
@@ -110,15 +117,20 @@ class Car:
             return
         y = self.speed * math.cos(math.radians(self.car.rotation))
         x = self.speed * math.sin(math.radians(self.car.rotation))
-        # if self.previous_direction.rotation != self.car.rotation:
-        #    self.car.x += x + self.previous_direction.x / 5
-        #    self.car.y += y + self.previous_direction.y / 5
-        # else:
-        self.car.x += x
-        self.car.y += y
-        self.previous_direction.x = x
-        self.previous_direction.y = y
-        self.previous_direction.rotation = self.car.rotation
+
+        for i in range(len(self.previous_direction)):
+            direction = self.previous_direction[i]
+            self.car.x += (direction.x * (i + 1) / 30)
+            self.car.y += (direction.y * (i + 1) / 30)
+        self.car.x += (x * 0.5)
+        self.car.y += (y * 0.5)
+
+        self.previous_direction.append(dotmap.DotMap(x=x, y=y, rotation=self.car.rotation))
+        if len(self.previous_direction) > 5:
+            self.previous_direction.pop(0)
+
+        config.camera_position[0] -= x
+        config.camera_position[1] -= y
         glTranslatef(-x, -y, 0)
         self.speed_label.x += x
         self.speed_label.y += y

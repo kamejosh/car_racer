@@ -55,6 +55,7 @@ def handle_car_stop():
 
 
 def key_handler():
+    global sleep_counter, label
     # exit
     if keys[key.ESCAPE]:
         pyglet.app.exit()
@@ -81,8 +82,11 @@ def key_handler():
         else:
             config.car.drifting = False
         # restart
-        if keys[key.R] and config.car.finish > 0:
-            glTranslatef(config.car.car.x, config.car.car.y, 0)
+        if keys[key.R]:
+            glTranslatef(-config.camera_position[0], -config.camera_position[1], 0)
+            config.camera_position = [0, 0]
+            label.text = ""
+            sleep_counter = 0
             config.car = Car(config.track)
 
 
@@ -142,7 +146,7 @@ def decide_follow_car():
     follow_car.follow = True
 
 
-def main(mode, length=1, seed=0, chance=30, max_angle=90, replay_folder="replays"):
+def main(mode, length=5000, seed=0, chance=30, max_angle=90, replay_folder="replays"):
     global label
     pyglet.gl.glClearColor(1, 0.7, 0.5, 1)
     config.track = Track(length, seed, {"chance": chance, "max_angle": max_angle})
@@ -159,6 +163,6 @@ def main(mode, length=1, seed=0, chance=30, max_angle=90, replay_folder="replays
 
 
 if __name__ == '__main__':
-    main(1)
+    main(0)
     for k in tic_toc.keys():
         print(f"{k}: {timed_function_statistics(k)}; executions: {len(tic_toc[k])}")

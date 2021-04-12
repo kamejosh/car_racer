@@ -12,4 +12,6 @@ track = None
 car = None
 replay_cars = []
 replay = False
+camera_position = [0, 0]
+max_speed = 18
 
